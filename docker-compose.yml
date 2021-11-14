@@ -1,0 +1,21 @@
+version: "3.5"
+services:
+  login-server:
+    container_name: login-server
+    restart: always
+    networks: 
+      - E-skeleton
+    build: .
+    ports:
+      - "8888:8888"
+  login-mongo:
+    container_name: login_DB
+    networks: 
+      - E-skeleton
+    image: mongo
+    ports:
+      - "27017:27017"
+
+networks:
+  E-skeleton:
+    name: E-skeleton-login

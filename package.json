@@ -1,15 +1,20 @@
 {
-  "name": "E-skeleton-socket",
+  "name": "e-skeleton-socket",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "NODE_ENV=production node server/app.js",
+    "dev": "NODE_ENV=development nodemon server/app.js",
+    "docker": "docker container run -d --rm -p 27017:27017 mongo && NODE_ENV=development nodemon server/app.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "websocket": "^1.0.34"
+    "body-parser": "^1.19.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "mongoose": "^6.0.12"
   }
 }
