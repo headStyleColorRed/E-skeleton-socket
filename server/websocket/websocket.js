@@ -29,7 +29,7 @@ wsServer.on('request', async (request) => {
     members.register(userId, socket, roomId)
 
     socket.on("message", (message) => {
-        members.broadcast(message)
+        members.broadcast(message, socket)
     })
 
     socket.on('close', (socket) => {
