@@ -1,6 +1,6 @@
 const express = require("express")
 const app = express();
-const puerto = 8889;
+const port = 8889;
 const Cors = require("cors")
 const mongoose = require("mongoose")
 const environment = process.env.NODE_ENV
@@ -32,7 +32,6 @@ app.use("/messages", validateToken, require("./requests/messageRequest"))
 
 
 // DataBase connection 
-let dbLink = "mongodb://localhost:27017/myData"
 let timeOut = setInterval(() => {
   mongoose.connect(dbLink, { useNewUrlParser: true }, (err) => {
     if (err) {
@@ -62,7 +61,7 @@ function validateToken(req, res, next) {
 
 
 // Open port
-app.listen(2001, () => console.log("Listening on port " + port))
+app.listen(port, () => console.log("Listening on port " + port))
 
 // ++++++++++++++++ HTTP METHODS +++++++++++++++++++ //
 
