@@ -33,6 +33,7 @@ wsServer.on('request', async (request) => {
     })
 
     socket.on('close', (socket) => {
+        members.purgeInactiveSockets()
         console.log('user closed connection');
     });
 }); 

@@ -8,7 +8,9 @@ module.exports = class Members {
     // Methods
     register(userId, socket, roomId) {
         let member = new Member(userId, socket, roomId)
+
         this.members.push(member)
+        console.log(this.members.length);
     }
 
     broadcast(message) {
@@ -26,5 +28,19 @@ module.exports = class Members {
                 member.socket.send(message.utf8Data)
             }
         });
+    }
+
+    purgeInactiveSockets() {
+        let indexOfSocketToRemove = 0
+
+        let i = 0
+        this.members.forEach(member => {
+            if (!member.socket.connected) {
+                indexOfSocketToRemove = i
+            }
+            i++
+        });
+
+        this.members.splice(indexOfSocketToRemove, indexOfSocketToRemove + 1)
     }
 }
