@@ -8,6 +8,8 @@ const jwt = require('jsonwebtoken');
 var dbLink = new String()
 require('dotenv').config()
 
+// Instantiate websocket server
+require("./websocket/websocket.js")
 
 // Modules
 const Message = require("./mongoDB/messageModel.js")

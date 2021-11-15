@@ -9,9 +9,7 @@ module.exports = class Members {
     // Methods
     register(userId, socket, roomId) {
         let member = new Member(userId, socket, roomId)
-
         this.members.push(member)
-        console.log(this.members.length);
     }
 
     async broadcast(rawMessage, senderSocket) {
@@ -25,8 +23,12 @@ module.exports = class Members {
         let successSavingMessage = await this.saveMessageToServer(decoded_message, senderSocket)
         if (!successSavingMessage) { return }
 
-        // Send server saving receipt back to sender
-        this.sendSavingConfirmationToMember(decoded_message, senderSocket)
+        // Send server-saving-receipt back to sender
+        if (decoded_message.receiptAuthor == undefined) {
+            this.sendServerSavingConfirmationToMember(decoded_message, senderSocket)
+        } else {
+            this.sendUserSavingConfirmationToMember(decoded_message)
+        }
 
         // Get all users in this room
         let roomMembers = this.members.filter((member) => { return member.roomId = roomId })
@@ -54,12 +56,14 @@ module.exports = class Members {
     }
 
     async saveMessageToServer(message) {
+        if (message.receiptAuthor != undefined) { return true }
+
         return axios.post("http://localhost:9005/messages/new_message", message)
             .then((res) => { return true })
             .catch((err) => { return false })
     }
 
-    sendSavingConfirmationToMember(message, senderSocket) {
+    sendServerSavingConfirmationToMember(message, senderSocket) {
         let receipt = {
             "messageId": message.id,
             "sender": {
@@ -70,6 +74,12 @@ module.exports = class Members {
             "chatroom": message.chatroom
         }
 
-        senderSocket.send(receipt)
+        senderSocket.send(JSON.stringify(receipt))
+    }
+
+    sendUserSavingConfirmationToMember(message) {
+        let userIdForReceipt = message.sender.id
+        let userSocketForReceipt = this.members.filter((member) => { return member.userId == userIdForReceipt })[0].socket
+        userSocketForReceipt.send(JSON.stringify(message))
     }
 }
