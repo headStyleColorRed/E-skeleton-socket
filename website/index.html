@@ -16,7 +16,7 @@
                 if (data["sender"] == undefined) {
                     p.appendChild(document.createTextNode(`>${data}`));
                 } else {
-                    p.appendChild(document.createTextNode(`>${data.sender.name}: ${decryptMessage(data.message)}`));
+                    p.appendChild(document.createTextNode(`>${data.sender.name}: ${data.message}`));
                 }
                 element.appendChild(p);
             }
@@ -81,15 +81,6 @@
 
             let stringifiedMessage = JSON.stringify(receipt)
             ws.send(stringifiedMessage)
-        }
-
-        function decryptMessage(message) {
-            var key = CryptoJS.enc.Utf8.parse('ccC2H19lDDbQDfakxcrtNMQdd0FloLGG');     // Use Utf8-Encoder. 
-            var iv = CryptoJS.enc.Utf8.parse('ggGGHUiDD0Qjhuvv');                     // Use Utf8-Encoder
-
-            var decryptedWA = CryptoJS.AES.decrypt(message, key, { iv: iv });
-            var decryptedUtf8 = decryptedWA.toString(CryptoJS.enc.Utf8);
-            return decryptedUtf8
         }
 
     </script>
