@@ -78,5 +78,5 @@ app.get("/messages", async (req, res) => {						//	 B O R R A R
 
 app.get("/delete_messages", async (req, res) => {				//	 B O R R A R
     await Message.deleteMany();					                //	 B O R R A R
-	res.json("Users deleted");								    //	 B O R R A R
+	res.json("Mesages deleted");							 //	 B O R R A R
 });

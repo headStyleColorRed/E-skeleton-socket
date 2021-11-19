@@ -59,7 +59,8 @@
                     "name": "Ana"
                 },
                 "chatroom": chatRoomId,
-                "status": "none"
+                "status": "none",
+                "messageType": "text"
             }
             let stringifiedMessage = JSON.stringify(newMessage)
             console.log(stringifiedMessage);
@@ -76,7 +77,8 @@
                     "name": receivedData.sender.name
                 },
                 "receiptAuthor": "user",
-                "chatroom": receivedData.chatroom
+                "chatroom": receivedData.chatroom,
+                "messageType": "receipt"
             }
 
             let stringifiedMessage = JSON.stringify(receipt)
