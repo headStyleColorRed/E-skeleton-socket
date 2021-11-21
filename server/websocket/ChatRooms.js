@@ -1,7 +1,7 @@
 const Member = require("./Member.js")
 const axios = require("axios")
 
-module.exports = class Members {
+module.exports = class ChatRooms {
     constructor() {
         this.chatrooms = new Object()
     }

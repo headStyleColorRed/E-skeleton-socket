@@ -2,10 +2,10 @@
 var WebSocketServer = require('websocket').server;
 var http = require('http');
 const port = 9006
-const Members = require("./Members.js")
+const ChatRooms = require("./ChatRooms.js")
 
 // Array of Objects
-var members = new Members()
+var members = new ChatRooms()
 
 var iOSServer = http.createServer();
 
