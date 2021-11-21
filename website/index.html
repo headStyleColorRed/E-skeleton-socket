@@ -4,6 +4,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1/crypto-js.js"></script>
     <script>
         let chatRoomId = "29eihcf892q"
+        let chatRoomId2 = "03hf0j0j11a"
         let userId = "B8CC43BA-514B"
         var ws = null
 
@@ -23,7 +24,7 @@
 
             var Socket = "MozWebSocket" in window ? MozWebSocket : WebSocket;
 
-            ws = new Socket(`ws://localhost:9006/${chatRoomId}?userId=${userId}`);
+            ws = new Socket(`ws://localhost:9006/?chatrooms=${[chatRoomId, chatRoomId2]}&userId=${userId}`);
             ws.onmessage = function (evt) {
                 console.log("New message");
                 console.log(evt.data);

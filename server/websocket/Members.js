@@ -3,13 +3,30 @@ const axios = require("axios")
 
 module.exports = class Members {
     constructor() {
-        this.members = new Array()
+        this.chatrooms = new Object()
     }
 
     // Methods
-    register(userId, socket, roomId) {
-        let member = new Member(userId, socket, roomId)
-        this.members.push(member)
+
+    // Iterates over all roomsId's and appends the new member to
+    // the proper chatrooms
+    register(userId, socket, roomsId) {
+        roomsId.forEach(roomId => {
+            let member = new Member(userId, socket, roomId)
+            this.addToRoom(member, roomId)
+        });
+        console.log(this.chatrooms);
+    }
+
+    // Creates or appends a user into the roomId key's array
+    addToRoom(member, roomId) {
+        // If room exists push member
+        // else create array with new member
+        if (roomId in this.chatrooms) {
+            this.chatrooms[roomId].push(member)
+        } else {
+            this.chatrooms[roomId] = [member]
+        }
     }
 
     async broadcast(rawMessage, senderSocket) {
@@ -59,17 +76,23 @@ module.exports = class Members {
 
     // Removing all sockets where there's no connection
     purgeInactiveSockets() {
+        for (const chatroom in this.chatrooms) {
+            this.removeSockets(this.chatrooms[chatroom])
+        }
+    }
+
+    removeSockets(chatroom) {
         let indexOfSocketToRemove = 0
 
         let i = 0
-        this.members.forEach(member => {
+        chatroom.forEach(member => {
             if (!member.socket.connected) {
                 indexOfSocketToRemove = i
             }
             i++
         });
 
-        this.members.splice(indexOfSocketToRemove, indexOfSocketToRemove + 1)
+        chatroom.splice(indexOfSocketToRemove, indexOfSocketToRemove + 1)
     }
 
     sendServerSavingConfirmationToMember(message, senderSocket) {

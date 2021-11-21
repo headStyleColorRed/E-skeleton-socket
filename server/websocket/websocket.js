@@ -25,11 +25,11 @@ wsServer.on('request', async (request) => {
     console.log('Received new connection');
 
     let userId = request.resourceURL.query.userId
-    let roomId = request.resourceURL.pathname.substring(1);
-    members.register(userId, socket, roomId)
+    let roomsId = request.resourceURL.query.chatrooms.split(",")
+    members.register(userId, socket, roomsId)
 
     socket.on("message", (message) => {
-        members.broadcast(message, socket)
+        // members.broadcast(message, socket)
     })
 
     socket.on('close', (socket) => {
