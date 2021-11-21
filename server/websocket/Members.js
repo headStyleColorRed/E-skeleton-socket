@@ -17,11 +17,6 @@ module.exports = class Members {
         let message = rawMessage.utf8Data
         let decoded_message = JSON.parse(message)
 
-        // Save message into database
-        let successSavingMessage = await this.saveMessageToServer(decoded_message, senderSocket)
-        if (!successSavingMessage) { return }
-
-        console.log(decoded_message)
         switch (decoded_message.messageType) {
             case "text":
                 this.handleTextMessage(message, decoded_message, senderSocket)
@@ -30,9 +25,10 @@ module.exports = class Members {
                 this.handleUsersReceipt(decoded_message)
                 break;
             case "delete":
-                this.handleMessageDeletion(message, decoded_message, senderSocket)
+                this.handleMessageDeletion(decoded_message)
                 break;
             case "edit":
+                this.handleMessageEdition(decoded_message)
                 break;
             default:
                 console.log("This message type isn't handled by the server => " + decoded_message.messageType);
@@ -43,11 +39,15 @@ module.exports = class Members {
         let roomId = decoded_message.chatroom
         let userId = decoded_message.sender.id
 
+        // Save message into database
+        let successSavingMessage = await this.saveMessageToServer(decoded_message, senderSocket)
+        if (!successSavingMessage) { return }
+
         // Send confirmation of server recival to original sender user
         this.sendServerSavingConfirmationToMember(decoded_message, senderSocket)
 
         // Get all users in this room
-        let roomMembers = usersInRoom(roomId)
+        let roomMembers = this.usersInRoom(roomId)
 
         // Send message to the rest of users in room
         roomMembers.forEach(member => {
@@ -105,14 +105,31 @@ module.exports = class Members {
 
     async handleMessageDeletion(decoded_message) {
         let success = await axios.post("http://localhost:9005/messages/delete_message", { id: decoded_message.messageId })
-            .then((res) => true )
-            .catch((err) => false )
+            .then((res) => true)
+            .catch((err) => false)
 
         // Change
         decoded_message.success = success
 
         // Get all users in this room
-        let roomMembers = usersInRoom(decoded_message.chatroom)
+        let roomMembers = this.usersInRoom(decoded_message.chatroom)
+
+        // Send message to the rest of users in room
+        roomMembers.forEach(member => {
+            member.socket.send(JSON.stringify(decoded_message))
+        });
+    }
+
+    async handleMessageEdition(decoded_message) {
+        let success = await axios.post("http://localhost:9005/messages/edit_message", { id: decoded_message.messageId, newMessage: decoded_message.newMessage })
+            .then((res) => true)
+            .catch((err) => false)
+
+        // Change
+        decoded_message.success = success
+
+        // Get all users in this room
+        let roomMembers = this.usersInRoom(decoded_message.chatroom)
 
         // Send message to the rest of users in room
         roomMembers.forEach(member => {
