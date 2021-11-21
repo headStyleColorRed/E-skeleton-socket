@@ -1,5 +1,6 @@
 // Message.model.js
 const mongoose = require("mongoose");
+const mongoosePaginate = require("mongoose-paginate-v2")
 
 const messageSchema = new mongoose.Schema({
 	id: {
@@ -25,6 +26,8 @@ const messageSchema = new mongoose.Schema({
 	}
 
 });
+
+messageSchema.plugin(mongoosePaginate)
 
 const Message = mongoose.model("Message", messageSchema);
 

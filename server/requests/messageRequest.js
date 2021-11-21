@@ -7,6 +7,9 @@ const ValidationManager = require("../tools/validation.js")
 
 router.get("/room_messages", async (req, res) => {
     let body = req.body
+    let limit = req.query.limit || 10
+    let page = req.query.page || 1
+    let messages = null
 
     // Validation
     let validationResult = ValidationManager.validateDataFields(body, ["chatroom"], "retrieving room messages");
@@ -14,11 +17,14 @@ router.get("/room_messages", async (req, res) => {
         return res.status(400).send({ code: validationResult.error, status: validationResult.message });
 
     try {
-        await Message.find({})
-        await message.save().catch((err) => { throw err })
+        messages = await Message.paginate({}, { limit, page })
     } catch (err) {
-        return res.status(400).send({ code: "400", message: "Error when saving message", data: err })
+        console.log(err);
+        return res.status(400).send({ code: "400", message: "Error when retrieving messages", data: err })
     }
+
+
+    res.status(200).send({ code: "200", message: "Success retrieving messages", data: messages })
 });
 
 router.post("/new_message", async (req, res) => {
