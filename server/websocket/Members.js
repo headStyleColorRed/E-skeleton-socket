@@ -15,7 +15,6 @@ module.exports = class Members {
             let member = new Member(userId, socket, roomId)
             this.addToRoom(member, roomId)
         });
-        console.log(this.chatrooms);
     }
 
     // Creates or appends a user into the roomId key's array
@@ -29,7 +28,7 @@ module.exports = class Members {
         }
     }
 
-    async broadcast(rawMessage, senderSocket) {
+    async handleMessage(rawMessage, senderSocket) {
         // Decode message and get room id and user id
         let message = rawMessage.utf8Data
         let decoded_message = JSON.parse(message)
@@ -54,7 +53,6 @@ module.exports = class Members {
 
     async handleTextMessage(message, decoded_message, senderSocket) {
         let roomId = decoded_message.chatroom
-        let userId = decoded_message.sender.id
 
         // Save message into database
         let successSavingMessage = await this.saveMessageToServer(decoded_message, senderSocket)
@@ -63,21 +61,17 @@ module.exports = class Members {
         // Send confirmation of server recival to original sender user
         this.sendServerSavingConfirmationToMember(decoded_message, senderSocket)
 
-        // Get all users in this room
-        let roomMembers = this.usersInRoom(roomId)
-
         // Send message to the rest of users in room
-        roomMembers.forEach(member => {
-            if (member.userId != userId) {
-                member.socket.send(message)
-            }
-        });
+        this.broadCastToOtherUsers(roomId, message, decoded_message.sender.id)
     }
 
     // Removing all sockets where there's no connection
     purgeInactiveSockets() {
         for (const chatroom in this.chatrooms) {
             this.removeSockets(this.chatrooms[chatroom])
+            if (this.chatrooms[chatroom].length == 0) { 
+                delete this.chatrooms[chatroom]
+            }
         }
     }
 
@@ -100,7 +94,8 @@ module.exports = class Members {
             "messageId": message.id,
             "sender": {
                 "id": message.sender.id,
-                "name": message.sender.name
+                "name": message.sender.name,
+                "imgUrl": message.sender.imgUrl
             },
             "receiptAuthor": "server",
             "chatroom": message.chatroom,
@@ -110,10 +105,14 @@ module.exports = class Members {
         senderSocket.send(JSON.stringify(receipt))
     }
 
-    handleUsersReceipt(message) {
-        let userIdForReceipt = message.sender.id
-        let userSocketForReceipt = this.members.filter((member) => { return member.userId == userIdForReceipt })[0].socket
-        userSocketForReceipt.send(JSON.stringify(message))
+    // Get user that needs the receipt, find him in his chatroom and send him
+    handleUsersReceipt(decoded_message) {
+        let userIdForReceipt = decoded_message.sender.id
+        let roomId = decoded_message.chatroom
+        let chatroomMembers = this.usersInRoom(roomId)
+
+        let userSocketForReceipt = chatroomMembers.filter((member) => { return member.userId == userIdForReceipt })[0].socket
+        userSocketForReceipt.send(JSON.stringify(decoded_message))
     }
 
 
@@ -135,12 +134,7 @@ module.exports = class Members {
         decoded_message.success = success
 
         // Get all users in this room
-        let roomMembers = this.usersInRoom(decoded_message.chatroom)
-
-        // Send message to the rest of users in room
-        roomMembers.forEach(member => {
-            member.socket.send(JSON.stringify(decoded_message))
-        });
+        this.broadCastToAllUsers(decoded_message.chatroom, JSON.stringify(decoded_message))
     }
 
     async handleMessageEdition(decoded_message) {
@@ -152,17 +146,27 @@ module.exports = class Members {
         decoded_message.success = success
 
         // Get all users in this room
-        let roomMembers = this.usersInRoom(decoded_message.chatroom)
-
-        // Send message to the rest of users in room
-        roomMembers.forEach(member => {
-            member.socket.send(JSON.stringify(decoded_message))
-        });
+        this.broadCastToAllUsers(decoded_message.chatroom, JSON.stringify(decoded_message))
     }
 
 
     // + + + + + + + + + + + + + + + + +  UTILS + + + + + + + + + + + + + + + + + + + + //
     usersInRoom(roomId) {
-        return this.members.filter((member) => { return member.roomId = roomId })
+        return this.chatrooms[roomId].filter((member) => { return member.roomId = roomId })
+    }
+
+    broadCastToAllUsers(roomId, message) {
+        this.usersInRoom(roomId).forEach(member => {
+            member.socket.send(message)
+        });
+    }
+
+    // Send message to the rest of users in room
+    broadCastToOtherUsers(roomId, message, senderId) {
+        this.usersInRoom(roomId).forEach(member => {
+            if (member.userId != senderId) {
+                member.socket.send(message)
+            }
+        });
     }
 }

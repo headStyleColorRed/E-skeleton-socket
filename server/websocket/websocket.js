@@ -29,7 +29,8 @@ wsServer.on('request', async (request) => {
     members.register(userId, socket, roomsId)
 
     socket.on("message", (message) => {
-        // members.broadcast(message, socket)
+        console.log(message);
+        members.handleMessage(message, socket)
     })
 
     socket.on('close', (socket) => {
